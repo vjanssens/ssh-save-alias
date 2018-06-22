@@ -1,0 +1,100 @@
+#!/bin/sh
+
+# Copyright (c) 2018 Vadiem Janssens <info@vadiemjanssens.nl>
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Shell script to save a ssh-connection to your ssh-config file
+
+usage () {
+  printf 'Usage: %s [-h|-n] [-p port] user@hostname\n' "$0" >&2
+  printf '\t-n: dry run    -- no aliasses are actually saved\n' >&2
+  printf '\t-h: print this help\n' >&2
+  exit 1
+}
+
+unset DRY_RUN PORT USERHOST USER HOST OUTPUT CONFIG_FILE
+
+OPTIND=1
+while getopts 'np:?h' c
+do
+  case $c in
+    n) DRY_RUN=1 ;;
+    p) PORT=$OPTARG ;;
+    h|?) usage ;;
+    \?) echo "Invalid option: -$OPTARG" >&2; return 1;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ -z "$1" ]; then USERHOST=""; else USERHOST="$1"; fi
+
+if [ $# = 0 ] ; then
+  usage
+fi
+
+CONFIG_FILE="${HOME}/.ssh/config"
+
+USER=$(echo $USERHOST | cut -f1 -d@)
+HOST=$(echo $USERHOST | cut -f2 -d@)
+
+build_output() {
+  OUTPUT="Host $HOST"$'\n'
+  OUTPUT=$OUTPUT"    hostname $HOST"$'\n'
+  OUTPUT=$OUTPUT"    user $USER"
+
+  if [ "$PORT" ] ; then
+    OUTPUT=$OUTPUT$'\n'"    port $PORT"
+  fi
+}
+
+write_output() {
+  if ! [ "$DRY_RUN" ] ; then
+    echo "$OUTPUT" >> $CONFIG_FILE
+  fi
+}
+
+build_output
+write_output
+
+if [ "$DRY_RUN" ] ; then
+  cat <<-EOF
+	=-=-=-=-=-=-=-=
+	Would have added the following to ~/.ssh/config:
+
+	$OUTPUT
+
+	Re-run the command without -n to apply the changes
+	=-=-=-=-=-=-=-=
+	EOF
+else
+  cat <<-EOF
+	=-=-=-=-=-=-=-=
+	Added the following to ~/.ssh/config:
+
+	$OUTPUT
+
+	Now try logging into the machine, with:   "ssh $HOST"
+	=-=-=-=-=-=-=-=
+	EOF
+fi
