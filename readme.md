@@ -2,7 +2,7 @@
 
 > Already using `ssh-copy-id`? Great! But still manually adding the same configuration info to `~/.ssh/config`? __No more!__
 
-This script creates an easy to remember alias in `~/.ssh/config` based on your input.
+This script creates an alias in `~/.ssh/config` based on your input.
 
 ## Usage
 
@@ -11,7 +11,7 @@ This script creates an easy to remember alias in `~/.ssh/config` based on your i
 ## Typical use-case
 
     $ ssh-copy-id root@somehost.com   // copies your public-key to the remote host
-    $ ssh-save-id root@somehost.com   // saves an easy to remember alias to ~/.ssh/config
+    $ ssh-save-id root@somehost.com   // uses the host-part as an alias in ~/.ssh/config
     $ ssh somehost.com                // use the alias to connect to the remote host
 
 ## Install
