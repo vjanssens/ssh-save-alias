@@ -10,7 +10,7 @@ This script creates an alias in `~/.ssh/config` based on your input.
 
 ## Typical use-case
 
-    $ ssh-copy-id root@somehost.com   // copies your public-key to the remote host
+    $ ssh-copy-id root@somehost.com   // copies your public-key to the remote host ($ brew install ssh-copy-id)
     $ ssh-save-id root@somehost.com   // uses the host-part as an alias in ~/.ssh/config
     $ ssh somehost.com                // use the alias to connect to the remote host
 
